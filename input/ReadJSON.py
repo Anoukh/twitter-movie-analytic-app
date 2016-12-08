@@ -1,28 +1,38 @@
 import json
 import re
-from nltk.tokenize import word_tokenize
 import htmlentitydefs
+import csv
 
 def main():
-    tweets = []
+    outputFile = open('/Users/anoukh/FYP/tokenizedloveyouzindaginew.csv', "wb")
+    writer = csv.writer(outputFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar=',')
     count = 0
+    outputTwitterArray = []
+    outputTwitterArray.append("date")
+    outputTwitterArray.append("text")
+    writer.writerow(outputTwitterArray)
     for line in open('/Users/anoukh/FYP/loveyouzindaginew.json', 'r'):
+        outputTwitterArray = []
         lineObject = json.loads(line)
         tweetText = lineObject["text"]
-        # if(lineObject["coordinates"] != None):
+        # if(lineObject["coordinates"] != None): Only process tweets with coordinates
         #     count = count + 1
         try:
             tweetText = unicode(tweetText)
         except UnicodeDecodeError:
             tweetText = str(tweetText).encode('string_escape')
             tweetText = unicode(tweetText)
+        outputTwitterArray.append(lineObject["created_at"])
+        outputTwitterArray.append(tokenizeTweets(tweetText))
         tokenizeTweets(tweetText)
-        count = count + 1
-        if (count == 1):
+        writer.writerow(outputTwitterArray)
+        count += 1
+        if (count == 6):
             break
     print count
 
-def tokenizeTweets(tweetText):
+
+def tokenizeTweets(tweetText): # TODO remove unnecessary tokens and combine together
     # Emoticons:
     emoticon_string = r"""
         (?:
@@ -84,9 +94,6 @@ def tokenizeTweets(tweetText):
         (?:\S)                         # Everything else that isn't whitespace.
         """
     )
-    print(tweetText)
-    tokens = word_tokenize(tweetText)
-    print tokens
 
     tokens_re = re.compile(r"""(%s)""" % "|".join(regex_strings), re.VERBOSE | re.I | re.UNICODE)
     emoticon_re = re.compile(regex_strings[1], re.VERBOSE | re.I | re.UNICODE)
@@ -94,6 +101,7 @@ def tokenizeTweets(tweetText):
     html_entity_digit_re = re.compile(r"&#\d+;")
     html_entity_alpha_re = re.compile(r"&\w+;")
     amp = "&amp;"
+    # TODO: Convert this symbol to 'and'
 
     def tokenize(s):
         return tokens_re.findall(s)
@@ -107,7 +115,7 @@ def tokenizeTweets(tweetText):
 
     def __html2unicode(s):
         """
-        Internal metod that seeks to replace all the HTML entities in
+        Internal method that seeks to replace all the HTML entities in
         s with their corresponding unicode characters.
         """
         # First the digits:
@@ -131,7 +139,9 @@ def tokenizeTweets(tweetText):
                 pass
             s = s.replace(amp, " and ")
         return s
-    print(preprocess(tweetText))
+
+    # print(preprocess(tweetText))
+    return preprocess(tweetText)
 
 if __name__ == '__main__':
     main()
