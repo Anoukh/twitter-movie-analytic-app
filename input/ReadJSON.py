@@ -2,6 +2,7 @@ import json
 import re
 import htmlentitydefs
 import csv
+from nltk.tokenize import TweetTokenizer as tokenizeTweet
 
 def main():
     outputFile = open('/Users/anoukh/FYP/tokenizedloveyouzindaginew.csv', "wb")
@@ -15,6 +16,7 @@ def main():
         outputTwitterArray = []
         lineObject = json.loads(line)
         tweetText = lineObject["text"]
+        print tokenizeTweet().tokenize(tweetText)
         # if(lineObject["coordinates"] != None): Only process tweets with coordinates
         #     count = count + 1
         try:
@@ -23,13 +25,33 @@ def main():
             tweetText = str(tweetText).encode('string_escape')
             tweetText = unicode(tweetText)
         outputTwitterArray.append(lineObject["created_at"])
-        outputTwitterArray.append(tokenizeTweets(tweetText))
-        tokenizeTweets(tweetText)
-        writer.writerow(outputTwitterArray)
+        tokenizedTweets = tokenizeTweets(tweetText)
+
+        removeUnneccassaryTokens(tokenizedTweets)
+        outputTwitterArray.append(tokenizedTweets)
+        # writer.writerow(outputTwitterArray)
         count += 1
-        if (count == 6):
+        if (count == 1):
             break
     print count
+
+
+def removeUnneccassaryTokens(tokens):
+    i = 0
+    for word in tokens:
+        if word == '&amp;':
+            word = 'and'
+            tokens[i] = word
+        if word == '@':
+            word = 'at'
+            tokens[i] = word
+        if word[:1] == '@':
+            tokens.pop(i)
+            # print
+        i += 1
+    print tokens
+
+
 
 
 def tokenizeTweets(tweetText): # TODO remove unnecessary tokens and combine together
@@ -51,6 +73,9 @@ def tokenizeTweets(tweetText): # TODO remove unnecessary tokens and combine toge
 
         # URLs
         r"""http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"""
+        ,
+        # And Symbol
+        r"""&amp;"""
         ,
         # Phone numbers:
         r"""
