@@ -9,48 +9,48 @@ import re
 trackedHashTag = "dearzindagi"
 
 def main():
-    outputFile = open('/Users/anoukh/FYP/tokenizedemoji.csv', "wb")
-    writer = csv.writer(outputFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar=',',
+    output_file = open('/Users/anoukh/FYP/tokenizedemoji.csv', "wb")
+    writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar=',',
                         encoding="utf-8")
     count = 0
-    outputTwitterArray = []
+    output_twitter_array = []
     # Append Headings
-    outputTwitterArray.append("date")
-    outputTwitterArray.append("text")
-    outputTwitterArray.append("lat")
-    outputTwitterArray.append("long")
+    output_twitter_array.append("date")
+    output_twitter_array.append("text")
+    output_twitter_array.append("lat")
+    output_twitter_array.append("long")
     # End Append Headings
-    writer.writerow(outputTwitterArray)
+    writer.writerow(output_twitter_array)
     for line in open('/Users/anoukh/FYP/Datasets/DearZindagi/emoji.json', 'r'):
-        outputTwitterArray = []
-        lineObject = json.loads(line)
-        tweetText = lineObject["text"]
-        # if(lineObject["coordinates"] != None): Only process tweets with coordinates
+        output_twitter_array = []
+        line_object = json.loads(line)
+        tweet_text = line_object["text"]
+        # if(line_object["coordinates"] != None): Only process tweets with coordinates
         #     count = count + 1
         # try:
-        #     tweetText = unicode(tweetText)
+        #     tweet_text = unicode(tweet_text)
         # except UnicodeDecodeError:
-        #     tweetText = str(tweetText).encode('string_escape')
-        #     tweetText = unicode(tweetText)
-        tokenizedTweets = TweetTokenizer(strip_handles=True, reduce_len=True).tokenize(tweetText)
+        #     tweet_text = str(tweet_text).encode('string_escape')
+        #     tweet_text = unicode(tweet_text)
+        tokenized_tweets = TweetTokenizer(strip_handles=True, reduce_len=True).tokenize(tweet_text)
         # Remove Stop Words
-        newTokenizedTweets = [w for w in tokenizedTweets if w.lower() not in stopwords.words('english')]
-        outputTwitterArray.append(lineObject["created_at"])
-        coordinatesObject = lineObject['coordinates']
+        new_tokenized_tweets = [w for w in tokenized_tweets if w.lower() not in stopwords.words('english')]
+        output_twitter_array.append(line_object["created_at"])
+        coordinates_object = line_object['coordinates']
 
         # preProcessedTextUnicode = replaceUnneccassaryTokens(newTokenizedTweets)
         # my_list = [str(my_list[x]) for x in range(len(preProcessedTextUnicode))]
         # print my_list
-        outputTwitterArray.append(replaceUnneccassaryTokens(newTokenizedTweets))
+        output_twitter_array.append(replace_unnecessary_tokens(new_tokenized_tweets))
 
         try:
-            outputTwitterArray.append(coordinatesObject['coordinates'][0])
-            outputTwitterArray.append(coordinatesObject['coordinates'][1])
+            output_twitter_array.append(coordinates_object['coordinates'][0])
+            output_twitter_array.append(coordinates_object['coordinates'][1])
         except TypeError:
-            outputTwitterArray.append(0.0)
-            outputTwitterArray.append(0.0)
+            output_twitter_array.append(0.0)
+            output_twitter_array.append(0.0)
 
-        writer.writerow(outputTwitterArray)
+        writer.writerow(output_twitter_array)
         # print outputTwitterArray
 
         # Break the loop at 10 for testing
@@ -62,7 +62,7 @@ def main():
 
 # TODO: Remove RT that have no location
 # TODO: Detect Outliers
-def replaceUnneccassaryTokens(tokens):
+def replace_unnecessary_tokens(tokens):
     i = 0
     newTokens = []
     flag = 'false'
