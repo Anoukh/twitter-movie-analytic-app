@@ -1,5 +1,7 @@
 def select_emoticon(x):
     return {
-        ":)": 'happy'
+        ":)": 'happy',
+        ":(": 'sad',
+        ":o": 'surprised'
 
-    }.get(x, 'unknown')
+    }.get(x, x)
