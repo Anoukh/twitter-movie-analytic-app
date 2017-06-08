@@ -9,11 +9,14 @@ import emojiDictionary
 import emoticonDictionary
 import re
 import string
+import en_core_web_md
 
 trackedHashTag = "dearzindagi"
 
 def main():
-    output_file = open('/Users/anoukh/FYP/tokenizeddearzindagifinal.csv', "wb")
+    nlp = en_core_web_md.load()
+
+    output_file = open('/Users/anoukh/FYP/Datasets/Yashoda/LoganPreProcessed.csv', "wb")
     writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar=',',
                         encoding="utf-8")
     lemmatizer = WordNetLemmatizer()
@@ -22,71 +25,95 @@ def main():
     # Append Headings
     output_twitter_array.append("date")
     output_twitter_array.append("text")
-    output_twitter_array.append("lat")
-    output_twitter_array.append("long")
-    # End Append Headings
-    writer.writerow(output_twitter_array)
+    # output_twitter_array.append("lat")
+    # output_twitter_array.append("long")
+    # output_twitter_array.append("ner")
+    output_twitter_array.append("total")
 
-    '''
+    # End Append Headings
+    # writer.writerow(output_twitter_array)
+
     twitter_array = []
     counter = 0
-    for line in open('/Users/anoukh/FYP/Datasets/DearZindagi/dearzindagifinal.json', 'r'):
+    for line in open('/Users/anoukh/FYP/Datasets/Logan/logan.json', 'r'):
         line = json.loads(line)
         twitter_array.append([line["text"], line["created_at"], line["coordinates"]])
         counter += 1
-        print counter
+    print counter
 
     print len(twitter_array)
-    L_dict = dict((x[0], x[1:]) for x in twitter_array)
-    print len(L_dict)
-
-    '''
-    for line in open('/Users/anoukh/FYP/Datasets/DearZindagi/dearzindagifinal.json', 'r'):
+    unique_tweet_set = dict((x[0], x[1:]) for x in twitter_array)
+    print len(unique_tweet_set)
+    count1 = 0
+    for key in unique_tweet_set:
         output_twitter_array = []
-        line_object = json.loads(line)
-        tweet_text = line_object["text"]
-        # if(line_object["coordinates"] != None): Only process tweets with coordinates
-        #     count = count + 1
-        tokenized_tweets = TweetTokenizer(strip_handles=True, reduce_len=True).tokenize(tweet_text)
-        pos_tagged = pos_tag(tokenized_tweets)
-        # Lemmatization
-        lemmatized_sentence = []
-        for tag in pos_tagged:
-            if tag[1].startswith('J'):
-                lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='a'))
-            elif tag[1].startswith('V'):
-                lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='v'))
-            elif tag[1].startswith('N'):
-                lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='n'))
-            elif tag[1].startswith('R'):
-                lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='r'))
-            else:
-                lemmatized_sentence.append(tag[0])
+        date_coordinate_object = unique_tweet_set[key]
+        if(True):  #Only process tweets with coordinates
+            print "Cordinates"
+            count1 = count1 + 1
+            print count1
 
-                # Remove Stop Words and Punctuations
-        stopwords_punctuations = stopwords.words('english') + list(string.punctuation)
-        new_tokenized_tweets = [word for word in tokenized_tweets if word.lower() not in stopwords_punctuations]
-        output_twitter_array.append(line_object["created_at"])
-        coordinates_object = line_object['coordinates']
-        # output_twitter_array.append(replace_unnecessary_tokens(new_tokenized_tweets))
+            # Tokenize
+            tokenized_tweets = TweetTokenizer(strip_handles=True, reduce_len=True).tokenize(key)
 
-        output_twitter_array.append(" ".join(map(str, replace_unnecessary_tokens(new_tokenized_tweets))))
+            # Part of Speech Tagging
+            pos_tagged = pos_tag(tokenized_tweets)
 
-        try:
-            output_twitter_array.append(coordinates_object['coordinates'][0])
-            output_twitter_array.append(coordinates_object['coordinates'][1])
-        except TypeError:
-            output_twitter_array.append(0.0)
-            output_twitter_array.append(0.0)
+            # Lemmatization
+            lemmatized_sentence = []
+            for tag in pos_tagged:
+                if tag[1].startswith('J'):
+                    lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='a'))
+                elif tag[1].startswith('V'):
+                    lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='v'))
+                elif tag[1].startswith('N'):
+                    lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='n'))
+                elif tag[1].startswith('R'):
+                    lemmatized_sentence.append(lemmatizer.lemmatize(tag[0], pos='r'))
+                else:
+                    lemmatized_sentence.append(tag[0])
 
-        writer.writerow(output_twitter_array)
-        # print output_twitter_array
+            # Remove Stop Words and Punctuations
+            stopwords_punctuations = stopwords.words('english') + list(string.punctuation)
+            new_tokenized_tweets = [word for word in tokenized_tweets if word.lower() not in stopwords_punctuations]
 
-        # Break the loop at 10 for testing
-        count += 1
-        print count
-        # if (count == 10):
-        #     break
+            output_twitter_array.append(date_coordinate_object[0])
+            # output_twitter_array.append(replace_unnecessary_tokens(new_tokenized_tweets))
+            try:
+                find_entity = " ".join(map(str, replace_unnecessary_tokens(new_tokenized_tweets)))
+                output_twitter_array.append(find_entity)
+            except UnicodeEncodeError:
+                continue
+
+            # try:
+            #     output_twitter_array.append(date_coordinate_object[1]['coordinates'][0])
+            #     output_twitter_array.append(date_coordinate_object[1]['coordinates'][1])
+            # except TypeError:
+            #     output_twitter_array.append(0.0)
+            #     output_twitter_array.append(0.0)
+            # except KeyError:
+            #     output_twitter_array.append(0.0)
+            #     output_twitter_array.append(0.0)
+
+            # Finding Entities
+
+            entity = []
+
+            # doc = nlp(unicode(find_entity))
+            # for temp in doc:
+            #     if temp.ent_type_ != "":
+            #         entity.append(temp.ent_type_)
+
+            # output_twitter_array.append(entity)
+            output_twitter_array.append(key)
+            writer.writerow(output_twitter_array)
+            # print output_twitter_array
+
+            # Break the loop at 10 for testing
+            count += 1
+            # print count
+            # if (count == 10):
+            #     break
     print count
 
 
@@ -127,12 +154,16 @@ def replace_unnecessary_tokens(tokens):
                 #     newTokens.append('happy')
                 # elif tokens[index] == ':(' or tokens[index] == ':-(':
                 #     newTokens.append('sad')
+                elif tokens[index].lower().strip() == "rt":
+                    continue
+                # Replace Emoticons
+                elif tokens[index] == "...":
+                    continue
                 elif tokens[index]:
                     try:
                         str(tokens[index])
                         newTokens.append(emoticonDictionary.select_emoticon(tokens[index]))
                     except Exception:
-                        print "error"
                         continue
                 else:
                     newTokens.append(emoticonDictionary.select_emoticon(tokens[index]))
