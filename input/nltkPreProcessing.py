@@ -19,7 +19,7 @@ def main():
     # nlp = en_core_web_md.load()
 
     # Output file
-    output_file = open('/Users/anoukh/FYP/Datasets/Yashoda/LoganPreProcessed.csv', "wb")
+    output_file = open('/Users/anoukh/FYP/Datasets/Kalana/AssassinsCreedLocationEntity.csv', "wb")
     writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar=',',
                         encoding="utf-8")
     lemmatizer = WordNetLemmatizer()
@@ -40,10 +40,10 @@ def main():
     counter = 0
 
     # Load JSON Object to Python Array
-    for line in open('/Users/anoukh/FYP/Datasets/Logan/logan.json', 'r'):
+    for line in open('/Users/anoukh/FYP/Datasets/AssassinsCreed/AssassinsCreedFirst.json', 'r'):
         line = json.loads(line)
-        twitter_array.append([line["text"], line["created_at"], line["coordinates"], line['favorite_count',
-                                                                                          line['retweet_count']]])
+        twitter_array.append([line["text"], line["created_at"], line["coordinates"], line['favorite_count'],
+                                                                                          line['retweet_count']])
     print len(twitter_array)
 
     # Remove duplicate tweets
@@ -158,14 +158,9 @@ def replace_unnecessary_tokens(tokens):
                 # URL removal
                 elif url_pattern.match(tokens[index]):
                     continue
-                # # Emoticon
-                # elif tokens[index] == ':)' or tokens[index] == ':-)':
-                #     newTokens.append('happy')
-                # elif tokens[index] == ':(' or tokens[index] == ':-(':
-                #     newTokens.append('sad')
                 elif tokens[index].lower().strip() == "rt":
                     continue
-                # Replace Emoticons
+                # Replace Unnecessary Token
                 elif tokens[index] == "...":
                     continue
                 elif tokens[index]:
