@@ -10,16 +10,39 @@ import re
 import string
 import en_core_web_md
 
+
+# Keywords on search
+# Assassins Creed
+# actor = ['michael', 'fassbender', 'marion', 'cotillard', 'sofia', 'aguilar']
+# director = ['justin', 'kurzel']
+
+# Dear Zindagi
+# actor = ['alia', 'bhatt', 'kaira', 'srk', 'sharukh', 'khan', 'shah', 'rukh', 'kunal', 'kapoor']
+# director = ['gauri', 'shinde']
+
+# Fifty Shades Darker
+# actor = ['dakota', 'johnson', 'jamie', 'anastasia', 'steele', 'christian', 'grey']
+# director = ['james', 'foley']
+
+# Logan
 actor = ['hugh', 'jackman', 'patrick', 'stewart', 'wolverine', 'dafne', 'keen']
 director = ['james', 'mangold']
+
+# Pirates of the Carribean
+# actor = ['johnny,' 'depp', 'geoffrey', 'rush', 'javier', 'bardem', 'jack', 'sparrow', 'salazar', 'barbossa', 'turner']
+# director = ['joachim', 'ronning', 'espen', 'sandberg']
+
+# Mummy
+# actor = ['tom', 'cruise', 'russell', 'crowe', 'annabelle', 'wallis', 'sofia', 'boutella']
+# director = ['alex','kurtzman']
 
 
 def main():
     # Load Scipy Model for Entity Recognition
-    # nlp = en_core_web_md.load()
+    nlp = en_core_web_md.load()
 
     # Output file
-    output_file = open('/Users/anoukh/FYP/Datasets/Kalana/AssassinsCreedLocationEntity.csv', "wb")
+    output_file = open('/Users/anoukh/FYP/Datasets/Kalana/LoganLocationEntity.csv', "wb")
     writer = csv.writer(output_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, escapechar=',',
                         encoding="utf-8")
     lemmatizer = WordNetLemmatizer()
@@ -29,8 +52,11 @@ def main():
     # Append Headings
     output_twitter_array.append("date")
     output_twitter_array.append("text")
+    output_twitter_array.append("favorite_count")
+    output_twitter_array.append("retweet_count")
     output_twitter_array.append("lat")
     output_twitter_array.append("long")
+    output_twitter_array.append("spacy")
     output_twitter_array.append("ner")
     output_twitter_array.append("total")
     writer.writerow(output_twitter_array)
@@ -40,7 +66,7 @@ def main():
     counter = 0
 
     # Load JSON Object to Python Array
-    for line in open('/Users/anoukh/FYP/Datasets/AssassinsCreed/AssassinsCreedFirst.json', 'r'):
+    for line in open('/Users/anoukh/FYP/Datasets/Logan/logan.json', 'r'):
         line = json.loads(line)
         twitter_array.append([line["text"], line["created_at"], line["coordinates"], line['favorite_count'],
                                                                                           line['retweet_count']])
@@ -106,11 +132,12 @@ def main():
 
             # Finding Entities
 
-            # entity = []
-            # doc = nlp(unicode(find_entity))
-            # for temp in doc:
-            #     if temp.ent_type_ != "":
-            #         entity.append(temp.ent_type_)
+            spacy_entity = []
+            doc = nlp(unicode(find_entity))
+            for temp in doc:
+                if temp.ent_type_ != "":
+                    spacy_entity.append(temp.ent_type_)
+            output_twitter_array.append(spacy_entity)
 
             entity = get_entity(find_entity)
             output_twitter_array.append(entity)
@@ -189,6 +216,8 @@ def get_entity(text):
         entity_list.append('DIR')
     if 'song' in text or 'soundtrack' in text:
         entity_list.append('SONG')
+    if 'game' in text or 'gameplay' in text or 'ps3' in text or 'ps4' in text:
+        entity_list.append('GAME')
     return entity_list
 
 
